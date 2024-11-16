@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Icons } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import { usePaymentStore } from "@/lib/stores/payment"
 import { PaymentStatus } from "@/components/payment/payment-status"
+import { ConfirmationDialog } from "@/components/payment/confirmation-dialog"
 import { formatDistance } from "date-fns"
 
 export default function PaymentConfirmPage({
@@ -19,30 +20,17 @@ export default function PaymentConfirmPage({
     const { toast } = useToast()
     const { getPayment, updatePayment } = usePaymentStore()
     const [isProcessing, setIsProcessing] = useState(false)
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+    const [showCancelDialog, setShowCancelDialog] = useState(false)
 
     const payment = getPayment(params.id)
-
-    useEffect(() => {
-        if (!payment) {
-            toast({
-                variant: "destructive",
-                title: "Payment Not Found",
-                description: "The payment you're looking for doesn't exist.",
-            })
-            router.push("/payments")
-        }
-    }, [payment, router, toast])
 
     const handleConfirmPayment = async () => {
         try {
             setIsProcessing(true)
-            // Update payment status to processing
+            setShowConfirmDialog(false)
             updatePayment(params.id, { status: 'processing' })
-
-            // Simulate blockchain transaction
             await new Promise(resolve => setTimeout(resolve, 2000))
-
-            // Update payment status to completed
             updatePayment(params.id, { status: 'completed' })
 
             toast({
@@ -50,11 +38,11 @@ export default function PaymentConfirmPage({
                 description: "Your payment has been processed successfully.",
             })
 
-            // Wait a bit before redirecting
             setTimeout(() => {
                 router.push("/payments")
             }, 1500)
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             updatePayment(params.id, { status: 'failed' })
             toast({
@@ -68,6 +56,7 @@ export default function PaymentConfirmPage({
     }
 
     const handleCancel = () => {
+        setShowCancelDialog(false)
         updatePayment(params.id, { status: 'failed' })
         router.push("/payments")
     }
@@ -78,9 +67,29 @@ export default function PaymentConfirmPage({
 
     return (
         <div className="container py-8">
+            <div className="mb-6">
+                <Button
+                    variant="ghost"
+                    onClick={() => router.back()}
+                    className="gap-2"
+                >
+                    <Icons.arrowLeft className="h-4 w-4" />
+                    Back
+                </Button>
+            </div>
+
             <Card>
-                <CardHeader>
-                    <CardTitle>Payment Confirmation</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Payment Details</CardTitle>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.back()}
+                        >
+                            Back to List
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <PaymentStatus
@@ -110,25 +119,17 @@ export default function PaymentConfirmPage({
                             </div>
                         )}
                     </div>
-
-                    {payment.status === 'pending' && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <p className="text-sm text-yellow-800">
-                                Please review the payment details before confirming.
-                            </p>
-                        </div>
-                    )}
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-4">
                     <Button
                         variant="outline"
-                        onClick={handleCancel}
+                        onClick={() => setShowCancelDialog(true)}
                         disabled={isProcessing || payment.status !== 'pending'}
                     >
-                        Cancel
+                        Cancel Payment
                     </Button>
                     <Button
-                        onClick={handleConfirmPayment}
+                        onClick={() => setShowConfirmDialog(true)}
                         disabled={isProcessing || payment.status !== 'pending'}
                     >
                         {isProcessing && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
@@ -136,6 +137,26 @@ export default function PaymentConfirmPage({
                     </Button>
                 </CardFooter>
             </Card>
+
+            <ConfirmationDialog
+                open={showConfirmDialog}
+                onOpenChange={setShowConfirmDialog}
+                title="Confirm Payment"
+                description="Are you sure you want to proceed with this payment? This action cannot be undone."
+                actionLabel="Confirm"
+                onConfirm={handleConfirmPayment}
+                onCancel={() => setShowConfirmDialog(false)}
+            />
+
+            <ConfirmationDialog
+                open={showCancelDialog}
+                onOpenChange={setShowCancelDialog}
+                title="Cancel Payment"
+                description="Are you sure you want to cancel this payment? This action cannot be undone."
+                actionLabel="Cancel Payment"
+                onConfirm={handleCancel}
+                onCancel={() => setShowCancelDialog(false)}
+            />
         </div>
     )
 }

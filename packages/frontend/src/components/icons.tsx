@@ -23,6 +23,7 @@ import {
     ArrowLeftRight,
     ShieldCheck,
     Receipt,
+    ArrowLeft,
 } from "lucide-react"
 import GoogleIcon from "./icons/google"
 
@@ -69,4 +70,5 @@ export const Icons = {
     transfer: ArrowLeftRight,
     security: ShieldCheck,
     receipt: Receipt,
+    arrowLeft: ArrowLeft
 }

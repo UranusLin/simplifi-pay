@@ -7,6 +7,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider"
 import { AuthAdapter } from "@web3auth/auth-adapter"
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { useWalletStore } from "@/lib/stores/wallet"
 
 interface Web3AuthContextType {
     web3auth: Web3AuthNoModal | null
@@ -44,6 +45,7 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const { toast } = useToast()
     const router = useRouter()
+    const { setWeb3 } = useWalletStore()
 
     useEffect(() => {
         const init = async () => {
@@ -54,14 +56,16 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
                     privateKeyProvider,
                 })
 
-                const adapter = new AuthAdapter();
-                web3authInstance.configureAdapter(adapter);
+                const adapter = new AuthAdapter()
+                web3authInstance.configureAdapter(adapter)
 
                 await web3authInstance.init()
                 setWeb3auth(web3authInstance)
 
                 if (web3authInstance.connected) {
-                    setProvider(web3authInstance.provider)
+                    const provider = web3authInstance.provider
+                    setProvider(provider)
+                    setWeb3(provider) // 添加這行
                     setIsAuthenticated(true)
                 }
             } catch (error) {
@@ -77,7 +81,7 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         init()
-    }, [toast])
+    }, [toast, setWeb3])
 
     const login = async () => {
         if (!web3auth) {
@@ -93,9 +97,19 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
             setIsLoading(true)
             const web3authProvider = await web3auth.connectTo(WALLET_ADAPTERS.AUTH, {
                 loginProvider: "google",
-            });
+            })
+
+            if (!web3authProvider) {
+                throw new Error("Failed to get provider")
+            }
+
             setProvider(web3authProvider)
+            setWeb3(web3authProvider) // 確保設置 web3
             setIsAuthenticated(true)
+
+            // 等待 provider 初始化
+            await new Promise(resolve => setTimeout(resolve, 2000))
+
             router.push('/dashboard')
 
             toast({
@@ -119,6 +133,7 @@ export function Web3AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await web3auth.logout()
             setProvider(null)
+            setWeb3(null) // 添加這行確保登出時清除 web3
             setIsAuthenticated(false)
             router.push('/login')
         } catch (error) {

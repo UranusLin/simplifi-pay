@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
     Table,
@@ -9,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { useWalletStore } from "@/lib/stores/wallet"
 import {
     Select,
     SelectContent,
@@ -16,28 +18,26 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-
-const transactions = [
-    {
-        id: "1",
-        date: "2024-02-15",
-        description: "Coffee Shop",
-        amount: 5.99,
-        status: "completed",
-        type: "payment",
-        from: "0x1234...5678",
-        to: "0x8765...4321",
-    },
-    // Add more mock data
-]
+import { usePaymentStore } from "@/lib/stores/payment"
+import { format } from "date-fns"
 
 export default function HistoryPage() {
+    const { payments } = usePaymentStore()
+    const { address } = useWalletStore()
+    const [filter, setFilter] = useState("all")
+
+    const filteredTransactions = payments.filter(tx => {
+        if (filter === "sent") return tx.from === address
+        if (filter === "received") return tx.to === address
+        return true
+    })
+
     return (
         <div className="container py-8">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Transaction History</CardTitle>
-                    <Select defaultValue="all">
+                    <Select value={filter} onValueChange={setFilter}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Filter by type" />
                         </SelectTrigger>
@@ -62,22 +62,30 @@ export default function HistoryPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {transactions.map((tx) => (
+                            {filteredTransactions.map((tx) => (
                                 <TableRow key={tx.id}>
-                                    <TableCell>{tx.date}</TableCell>
-                                    <TableCell className="capitalize">{tx.type}</TableCell>
-                                    <TableCell>{tx.description}</TableCell>
-                                    <TableCell>${tx.amount.toFixed(2)}</TableCell>
-                                    <TableCell className="font-mono">{tx.from}</TableCell>
-                                    <TableCell className="font-mono">{tx.to}</TableCell>
                                     <TableCell>
-                    <span className={
-                        tx.status === "completed"
-                            ? "text-green-600"
-                            : "text-yellow-600"
-                    }>
-                      {tx.status}
-                    </span>
+                                        {format(new Date(tx.createdAt), "PPp")}
+                                    </TableCell>
+                                    <TableCell className="capitalize">
+                                        {tx.from === address ? "Sent" : "Received"}
+                                    </TableCell>
+                                    <TableCell>{tx.description}</TableCell>
+                                    <TableCell>${tx.amount} USDC</TableCell>
+                                    <TableCell className="font-mono">
+                                        {tx.from ? `${tx.from.slice(0, 6)}...${tx.from.slice(-4)}` : '-'}
+                                    </TableCell>
+                                    <TableCell className="font-mono">
+                                        {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className={`px-2 py-1 rounded-full text-xs ${
+                                            tx.status === "completed" ? "bg-green-100 text-green-800" :
+                                                tx.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                                                    "bg-red-100 text-red-800"
+                                        }`}>
+                                            {tx.status}
+                                        </span>
                                     </TableCell>
                                 </TableRow>
                             ))}

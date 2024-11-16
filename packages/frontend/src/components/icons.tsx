@@ -24,6 +24,9 @@ import {
     ShieldCheck,
     Receipt,
     ArrowLeft,
+    RefreshCcw,
+    LucideCopy,
+    Fingerprint
 } from "lucide-react"
 import GoogleIcon from "./icons/google"
 
@@ -70,5 +73,8 @@ export const Icons = {
     transfer: ArrowLeftRight,
     security: ShieldCheck,
     receipt: Receipt,
-    arrowLeft: ArrowLeft
+    arrowLeft: ArrowLeft,
+    refresh: RefreshCcw,
+    copy: LucideCopy,
+    fingerprint: Fingerprint
 }

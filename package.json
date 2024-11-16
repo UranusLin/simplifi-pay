@@ -14,10 +14,14 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "turbo": "latest",
-    "typescript": "^5.0.0",
     "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
     "prettier": "^3.0.0",
-    "eslint": "^8.0.0"
+    "turbo": "latest",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@web3auth/base": "^9.4.0",
+    "lucide-react": "^0.459.0"
   }
 }

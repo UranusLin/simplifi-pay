@@ -14,8 +14,9 @@ import { formatDistance } from "date-fns"
 export default function PaymentConfirmPage({
                                                params,
                                            }: {
-    params: { id: string }
+    params: any
 }) {
+    const paymentId = params?.id;
     const router = useRouter()
     const { toast } = useToast()
     const { getPayment, updatePayment } = usePaymentStore()
@@ -23,7 +24,7 @@ export default function PaymentConfirmPage({
     const [showConfirmDialog, setShowConfirmDialog] = useState(false)
     const [showCancelDialog, setShowCancelDialog] = useState(false)
 
-    const payment = getPayment(params.id)
+    const payment = getPayment(paymentId);
 
     const handleConfirmPayment = async () => {
         try {

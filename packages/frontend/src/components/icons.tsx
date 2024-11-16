@@ -26,7 +26,8 @@ import {
     ArrowLeft,
     RefreshCcw,
     LucideCopy,
-    Fingerprint
+    Fingerprint,
+    Info
 } from "lucide-react"
 import GoogleIcon from "./icons/google"
 
@@ -76,5 +77,6 @@ export const Icons = {
     arrowLeft: ArrowLeft,
     refresh: RefreshCcw,
     copy: LucideCopy,
-    fingerprint: Fingerprint
+    fingerprint: Fingerprint,
+    info: Info
 }

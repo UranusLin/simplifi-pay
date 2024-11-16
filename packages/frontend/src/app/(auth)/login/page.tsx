@@ -1,41 +1,34 @@
 'use client'
 
-import {useAuth} from '@/providers/auth-provider'
-import {Button} from '@/components/ui/button'
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card'
-import {Icons} from '@/components/icons'
-import { useToast } from "@/hooks/use-toast"
+import { useWeb3Auth } from '@/providers/web3auth-provider'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Icons } from '@/components/icons'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-    const {login, isLoading} = useAuth()
-    const {toast} = useToast()
+    const { login, isLoading, isAuthenticated } = useWeb3Auth()
+    const router = useRouter()
 
-    const handleLogin = async () => {
-        try {
-            await login()
-        } catch (error) {
-            toast({
-                variant: "destructive",
-                title: "Authentication failed",
-                description: "There was a problem signing you in. Please try again.",
-            })
-            console.error(error)
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push('/dashboard')
         }
-    }
+    }, [isAuthenticated, router])
 
     return (
-        <div
-            className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-                <div className="absolute inset-0 bg-primary"/>
+                <div className="absolute inset-0 bg-primary" />
                 <div className="relative z-20 flex items-center text-lg font-medium">
-                    <Icons.logo className="mr-2 h-6 w-6"/>
+                    <Icons.logo className="mr-2 h-6 w-6" />
                     SimpliFi Pay
                 </div>
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
                         <p className="text-lg">
-                            &#34;The future of payments is here - secure, private, and seamless.&#34;
+                            &quot;The future of payments is here - secure, private, and seamless.&quot;
                         </p>
                     </blockquote>
                 </div>
@@ -49,17 +42,17 @@ export default function LoginPage() {
                                 Sign in with your account to continue
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="grid gap-4">
+                        <CardContent>
                             <Button
                                 variant="outline"
-                                onClick={handleLogin}
+                                onClick={login}
                                 disabled={isLoading}
                                 className="w-full"
                             >
                                 {isLoading ? (
-                                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin"/>
+                                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
-                                    <Icons.google className="mr-2 h-4 w-4"/>
+                                    <Icons.google className="mr-2 h-4 w-4" />
                                 )}
                                 Continue with Google
                             </Button>
@@ -67,7 +60,7 @@ export default function LoginPage() {
                         <CardFooter className="flex flex-col gap-4">
                             <div className="relative">
                                 <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t"/>
+                                    <span className="w-full border-t" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">

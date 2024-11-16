@@ -1,7 +1,7 @@
 'use client'
 
 import { ThemeProvider } from "next-themes"
-import { AuthProvider } from "./auth-provider"
+import { Web3AuthProvider } from "./web3auth-provider"
 import { Toaster } from "@/components/ui/toaster"
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -11,10 +11,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
             defaultTheme="system"
             enableSystem
         >
-            <AuthProvider>
+            <Web3AuthProvider>
                 {children}
                 <Toaster />
-            </AuthProvider>
+            </Web3AuthProvider>
         </ThemeProvider>
     )
 }
